@@ -3,22 +3,53 @@
 pg = (function () {
 
 	var campaignApiKey = '742c9f0cc515f1f1661258be8dfa71fc:12:60820948';
-	var congressApiKey = "67de46ebf25b9b197ce9ce6a50dde1ce:2:60820948";
+	var congressApiKey = '67de46ebf25b9b197ce9ce6a50dde1ce:2:60820948';
 
 
 	var senateSvc = "http://api.nytimes.com/svc/politics/v3/us/legislative/congress/112/senate/members.json?api-key=" + congressApiKey;
 	var houseSvc= "http://api.nytimes.com/svc/politics/v3/us/legislative/congress/112/house/members.json?api-key=" + congressApiKey;
 	var senate = {};
 
+
+	var CongressModel = (function () {
+
+		var campaignApiKey = '742c9f0cc515f1f1661258be8dfa71fc:12:60820948',
+			congressApiKey = '67de46ebf25b9b197ce9ce6a50dde1ce:2:60820948',
+			senateMembersSvc = _.template("http://api.nytimes.com/svc/politics/v3/us/legislative/congress/<%= congress %>/<%= zoo %>/members.json?api-key=" + congressApiKey);
+
+		var getSenateMemberSvcUrl = function (congress, zoo) {
+
+			return campaignApiKey({congress: congress, zoo: zoo});
+
+		};
+
+		var getSenateMembers = function (congress, zoo) {
+
+			console.log(getSenateMemberSvcUrl(congress, zoo));
+
+		};
+
+		return {
+			getSenateMembers: getSenateMembers
+		};
+
+	}());
+
+
+
+	CongressModel.getSenateMembers(2014, 'house');
+
+
+
 	var folks = $('#folks');
 
-	var getData = function (svc, callback) {
+	var getData = function (path, svc, callback) {
 		$.getJSON("proxy.php?url=" + svc, callback);
 	};
 
 	var getRep = function (url, callback) {
 		getData(url + "?api-key=" + congressApiKey, callback);
-	}
+	};
 
 	var opt;
 	for (var i = 112; i > 0; i --) {
@@ -35,20 +66,56 @@ pg = (function () {
 	});
 
 	var pickCongress = function (zoo, congress) {
-		var url = "http://api.nytimes.com/svc/politics/v3/us/legislative/congress/" + congress + "/" + zoo + "/members.json?api-key=" + congressApiKey;
-		getCongress(url);
+		getCongress(zoo, congress);
 	};
 
-	var getCongress = function (url) {
+
+
+	var getCongress = function (zoo, congress) {
+
+		var url = "http://api.nytimes.com/svc/politics/v3/us/legislative/congress/" + congress + "/" + zoo + "/members.json?api-key=" + congressApiKey;
 
 		getData(url, function (data) {
+
+			var votesWithPartyByMissed = function(e) {
+
+				// Push nodes toward their designated focus.
+				var k = 0.1 * e.alpha;
+
+				console.log(foci);
+
+				senate.members.forEach(function(o, i) {
+
+					var foc, ofoc;
+
+					o.party == "D" ? foc = 0 : foc = 1;
+					o.party == "D" ? ofoc = 1 : ofoc = 0;
+
+						// pull down for missed votes
+					o.y += (foci[foc].y - o.y + (o.missed_votes_pct * 40)) * k;
+
+						// pull toward own party
+					o.x += (foci[foc].x - o.x) * k * (o.votes_with_party_pct / 100);
+
+						// pull toward other party
+					o.x += (foci[ofoc].x - o.x) * k * (1 - o.votes_with_party_pct / 100) * 1.8;
+
+				});
+
+				vis.selectAll("circle")
+					.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; });
+			};
+
+
+			var forcer = votesWithPartyByMissed;
 
 			senate = data.contents.results[0];
 
 			var w = 1400,
 				h = 4000,
-				i, 
-				sen, 
+				i,
+				sen,
 				member,
 				foci = [{x: 200, y: 100}, {x: 1200, y: 100}];
 
@@ -58,32 +125,7 @@ pg = (function () {
 				.gravity(0)
 				.size([w, h]);
 
-			force.on("tick", function(e) {
-
-				// Push nodes toward their designated focus.
-				var k = 0.1 * e.alpha;
-				senate.members.forEach(function(o, i) {
-
-					var foc, ofoc;
-
-					o.party == "D" ? foc = 0 : foc = 1;
-					o.party == "D" ? ofoc = 1 : ofoc = 0;
-
-					  // pull toward own party
-					o.y += (foci[foc].y - o.y + (o.missed_votes_pct * 80)) * k;
-					o.x += (foci[foc].x - o.x) * k * (o.votes_with_party_pct / 100);
-
-					  // pull toward other party
-					o.y += (foci[ofoc].y - o.y) * k; //* (1 - o.votes_with_party_pct / 100) * 0.2;
-					o.x += (foci[ofoc].x - o.x) * k * (1 - o.votes_with_party_pct / 100) * 1.8;
-
-				});
-
-				vis.selectAll("circle")
-					.attr("cx", function(d) { return d.x; })
-					.attr("cy", function(d) { return d.y; });
-			});
-
+			force.on("tick", forcer);
 
 			$('#vis').remove();
 			$('body').append('<svg id="vis" width="1400" height="4000"></svg>');
@@ -126,8 +168,6 @@ pg = (function () {
 //				.attr('fill', '#eee');
 
 			force.start();
-
-			console.log(senate.members[0]);
 
 		});
 
@@ -192,7 +232,7 @@ pg = (function () {
     var fn = !/\W/.test(str) ?
       cache[str] = cache[str] ||
         tmpl(document.getElementById(str).innerHTML) :
-      
+
       // Generate a reusable function that will serve as a template
       // generator (and which will be cached).
       new Function("obj",

@@ -1,28 +1,68 @@
 <html>
 
 	<head>
-		<script type="text/javascript" src="d3.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 
 		<title> P a r t i s a n  G r a v i t y </title>
+
+		<script src="js/lib/jquery.min.js"></script>
+		<script src="js/lib/underscore.js"></script>
+		<script src="js/lib/backbone.js"></script>
+		<script src="js/lib/d3.js"></script>
+
+		<script src="js/src/config.js"></script>
+		<script src="js/src/models/congress.js"></script>
+		<script src="js/src/models/member.js"></script>
+
+		<script src="js/src/views/main.js"></script>
+		<script src="js/src/views/dashboard.js"></script>
+		<script src="js/src/views/partisan-votes-force.js"></script>
+		<script src="js/src/views/representative.js"></script>
+
+		<link href="styles/pg.css" type="text/css" rel="stylesheet" />
+
+		<script type="text/html" id="partisan-votes-force-template">
+
+			<!-- <svg class="vis" width="1400" height="4000"></svg> -->
+
+
+		</script>
+
+		<script type="text/html" id="main-template">
+
+		</script>
+
+		<script type="text/html" id="representative-template">
+
+			<div class="name">
+				<%=last_name%>, <%=first_name%>
+			</div>
+
+			<div class="role">
+				<%=party%>-<%=state%> <%=district%>
+			</div>
+
+			<div>
+				<span class="label">Missed Vote %:</span>
+				<span class="info"><%= missed_votes_pct %></span>
+			</div>
+			<div>
+				<span class="label">Votes with party %:</span>
+				<span class="info"><%= votes_with_party_pct%> </span>
+			</div>
+			<div>
+				<span class="label">Senority</span>
+				<span class="info"><%= seniority %> </span>
+			</div>
+
+		</script>
+
 
 		<script type="text/html" id="repTemplate">
 
 			<div id="<%=member_id%>">
-				<div class="name">
-					<%=last_name%>, <%=first_name%> (<%=current_party%>-<%=roles[0].state%>)
-				</div>
 				<div>
 					<span class="label">Terms:</span>
 					<span class="info"><%=roles.length%></span> 
-				</div>
-				<div>
-					<span class="label">Missed Vote %:</span>
-					<span class="info"><%=roles[0].missed_votes_pct%> (<%=career_missed_votes_pct%>)</span>
-				</div>
-				<div>
-					<span class="label">Votes with party %:</span>
-					<span class="info"><%=roles[0].votes_with_party_pct%> (<%=career_votes_with_party_pct%>)</span>
 				</div>
 				<div>
 					<span class="label">Bills Sponsored:</span>
@@ -37,58 +77,50 @@
 
 		</script>
 
-		<style type="text/css">
-			#folks {
-				position: fixed;
-				left: 480px;
-				top: 290px;
-				background-color: #eee;
-				padding: 12px;
-				border: 1px solid #000;
-				border-right: 2px solid #000;
-				border-bottom: 2px solid #000;
-			}
-			#folks .label {
-				width: 300px;
-			}
-			#folks .info {
-				font-weight: bold;
-			}
-		</style>
+		<script type="text/html" id="dashboard-template">
+
+			<div class="dashboard">
+
+				<div id="controls">
+					Choose a zoo:
+					<select id="zooChooser">
+						<option value="senate">Senate</option>
+						<option value="house">House</option>
+					</select>
+
+					Choose a congress:
+					<select id="folkChooser">
+						<option value="113">113</option>	
+						<option value="112">112</option>	
+						<option value="111">111</option>	
+						<option value="110">110</option>	
+						<option value="109">109</option>	
+						<option value="108">108</option>	
+						<option value="107">107</option>	
+						<option value="106">106</option>	
+						<option value="105">105</option>	
+						<option value="104">104</option>	
+						<option value="103">103</option>	
+						<option value="102">102</option>	
+					</select>
+				</div>
+
+
+			</div>
+
+			<div class="rep"></div>
+
+
+		</script>
+
 
 	</head>
 
 	<body>
 
-		<div id="folks">
-		</div>
+		<div class="container"></div>
 
-		<div id="controls">
-			Choose a zoo:
-			<select id="zooChooser">
-				<option value="senate">Senate</option>
-				<option value="house">House</option>
-			</select>
-
-			Choose a congress:
-			<select id="folkChooser">
-				<option value="112">112</option>	
-				<option value="111">111</option>	
-				<option value="110">110</option>	
-				<option value="109">109</option>	
-				<option value="108">108</option>	
-				<option value="107">107</option>	
-				<option value="106">106</option>	
-				<option value="105">105</option>	
-				<option value="104">104</option>	
-				<option value="103">103</option>	
-				<option value="102">102</option>	
-			</select>
-		</div>
-
-		<svg id="vis" width="1400" height="4000"></svg>
-
-		<script src="pg.js"></script>
+		<script src="js/src/app.js"></script>
 
 	</body>
 

@@ -1,0 +1,31 @@
+
+.dashboard {
+	
+	position: fixed;
+	bottom: 0;
+
+	background-color: white;
+
+	border-top: 1px solid #eee;
+
+}
+
+.rep {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	background-color: #eee;
+	padding: 12px;
+	border: 1px solid #000;
+	border-right: 2px solid #000;
+	border-bottom: 2px solid #000;
+
+}
+
+.rep .label {
+	width: 300px;
+}
+
+.rep .info {
+	font-weight: bold;
+}
