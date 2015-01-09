@@ -2,23 +2,43 @@
 .dashboard {
 	
 	position: fixed;
+
 	bottom: 0;
+	left: 0;
+	right: 0;
+
+	height: 180px;
 
 	background-color: white;
 
-	border-top: 1px solid #eee;
+	border-top: 1px solid #444;
 
 }
 
 .rep {
-	position: fixed;
-	left: 0;
-	bottom: 0;
+
+	float: right;
+
 	background-color: #eee;
 	padding: 12px;
 	border: 1px solid #000;
 	border-right: 2px solid #000;
 	border-bottom: 2px solid #000;
+
+	margin: 24px;
+
+}
+
+.viewer {
+
+	position: fixed;
+
+	top: 100px;
+	bottom: 180px;
+	left: 0;
+	right: 0;
+
+	border: 1px solid #444;
 
 }
 
@@ -28,4 +48,15 @@
 
 .rep .info {
 	font-weight: bold;
+}
+
+.controls {
+	height: 180px;
+	width: 300px;
+	margin: 24px;
+}
+
+.control .label {
+	display: inline-block;
+	width: 150px;
 }

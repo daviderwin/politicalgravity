@@ -4,137 +4,143 @@ pg.views = pg.views || {};
 
 pg.views.PartisanVotesForce = Backbone.View.extend({
 
-	initialize: function () {
+    initialize: function () {
 
-		this.template = _.template($('#partisan-votes-force-template').html());
+        _.bindAll(this, 'votesWithPartyByMissed');
 
-	},
+        this.template = _.template($('#partisan-votes-force-template').html());
 
-	getColor: function (rep) {
+    },
 
-		return rep.get('party') == "D" ? "#00F" : "#F00";
+    getColor: function (rep) {
 
-	},
+        return rep.get('party') == "D" ? "#00F" : "#F00";
 
-	getRadius: function (rep) {
+    },
 
-		return Math.sqrt(rep.get('seniority') * 16);
+    getRadius: function (rep) {
 
-	},
+        return Math.sqrt(rep.get('seniority') * 16);
 
-	renderViz: function () {
+    },
 
-		var votesWithPartyByMissed = function(e) {
+    layout: _.throttle(function () {
 
-			// Push nodes toward their designated focus.
-			var k = 1 * e.alpha;
+        this.width = this.$el.width();
+        this.height = this.$el.height();
 
-			zoo.models.forEach(function(o, i) {
+        this.foci = [{x: 40, y: 40}, {x: this.width - 40, y: 40}];
 
-				var foc, ofoc;
+        this.force = d3.layout.force()
+            .nodes(this.model.get('members').models)
+            .links([])
+            .gravity(0)
+            .size([this.width, this.height])
+            .on("tick", this.votesWithPartyByMissed);
 
-				if (! o.get('x')) { o.set('x', 0) }
-				if (! o.get('y')) { o.set('y', 0) }
+        // restart force to reset alpha, which may be used for easing
+        this.force.stop();
+        this.force.start();
 
-				o.get('party') == "D" ? foc = 0 : foc = 1;
-				o.get('party') == "D" ? ofoc = 1 : ofoc = 0;
+    }, 250),
 
-					// pull down for missed votes
-				o.set('y', o.get('y') + (foci[foc].y - o.get('y') + (o.get('missed_votes_pct') * 40)) * k);
+    votesWithPartyByMissed: function(e) {
 
-					// pull toward own party
-				o.set('x', o.get('x') + (foci[foc].x - o.get('x')) * k * (o.get('votes_with_party_pct') / 100));
+        console.log('force');
 
-					// pull toward other party
-				o.set('x', o.get('x') + (foci[ofoc].x - o.get('x')) * k * (1 - o.get('votes_with_party_pct') / 100) * 1.8);
+        // Push nodes toward their designated focus.
+        var that = this,
+            k = 0.5;  // linear velocity
+//            k = 1 * e.alpha; // decreasing velocity (easing)
+    
+        this.model.get('members').models.forEach(function(o, i) {
 
-				o.x = o.get('x');
-				o.y = o.get('y');
+            var foc, ofoc;
 
-			});
+            if (! o.get('x')) { o.set('x', 0); }
+            if (! o.get('y')) { o.set('y', 0); }
 
-			vis.selectAll("circle")
-				.attr("cx", function(d) { return d.x; })
-				.attr("cy", function(d) { return d.y; });
-		};
+            o.get('party') == "D" ? foc = 0 : foc = 1;
+            o.get('party') == "D" ? ofoc = 1 : ofoc = 0;
 
+                // pull down for missed votes
+            o.set('y', o.get('y') + (that.foci[foc].y - o.get('y') + (o.get('missed_votes_pct') * 40)) * k);
 
-		var forcer = votesWithPartyByMissed;
+                // pull toward own party
+            o.set('x', o.get('x') + (that.foci[foc].x - o.get('x')) * k * (o.get('votes_with_party_pct') / 100));
 
-		var zoo = this.model.get('members');
+                // pull toward other party
+            o.set('x', o.get('x') + (that.foci[ofoc].x - o.get('x')) * k * (1 - o.get('votes_with_party_pct') / 100) * 1);
 
-		var that = this;
+            o.x = o.get('x');
+            o.y = o.get('y');
 
-		var w = 1400,
-			h = 4000,
-			i,
-			sen,
-			member,
-			foci = [{x: 200, y: 100}, {x: 1200, y: 100}];
+        });
 
-		var force = d3.layout.force()
-			.nodes(zoo.models)
-			.links([])
-			.gravity(0)
-			.size([w, h]);
+        this.vis.selectAll("circle")
+            .attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
 
-		force.on("tick", forcer);
+    },
 
-		$('#vis').remove();
-		$('body').append('<svg id="vis" width="1400" height="4000"></svg>');
+    renderViz: function () {
 
-		var vis = d3.select('#vis');
-		vis.selectAll('circle')
-			.data(zoo.models)
-			.enter()
-			.append('circle')
-			.attr('r', this.getRadius)
-			.attr('cx', function (d, i) {
-				return (i % 12) * 50 + 25;
-			})
-			.attr('cy', function (d, i) {
-				return Math.floor(i / 12) * 50 + 25;
-			})
-			.attr('fill', that.getColor)
-			.attr('stroke', 'black')
-			.attr('stroke-width', 2)
-			.attr('partyKey', function (d, i) {
-				return d.party == "D" ? 0 : 1;
-			})
-			.text(function (d, i) {
-				return d.get('last_name') + ', ' + d.get('first_name') + ' (' + d.get('party') + ')';
-			})
-			.on('mouseover', function (rep) {
-				that.renderRepresentative(rep);
-			})
-			.on('mouseout', function (d, i) {
-				that.hideRepresentative();
-			});
-//				.exit()
-//				.attr('r', 1)
-//				.attr('fill', '#eee');
+        var that = this;
 
-		force.start();
+        this.vis.selectAll('circle')
+            .data(this.model.get('members').models)
+            .enter()
+                .append('circle')
+                .attr('r', this.getRadius)
+                .attr('cx', function (d, i) {
+                    return (i % 12) * 50 + 25;
+                })
+                .attr('cy', function (d, i) {
+                    return Math.floor(i / 12) * 50 + 25;
+                })
+                .attr('fill', that.getColor)
+                .attr('stroke', 'black')
+                .attr('stroke-width', 2)
+                .attr('partyKey', function (d, i) {
+                    return d.party == "D" ? 0 : 1;
+                })
+                .text(function (d, i) {
+                    return d.get('last_name') + ', ' + d.get('first_name') + ' (' + d.get('party') + ')';
+                })
+                .on('mouseover', function (rep) {
+                    that.selectRep(rep);
+                })
+                .on('mouseout', function (d, i) {
+                    that.deselectRep();
+                });
+//              .exit()
+//              .attr('r', 1)
+//              .attr('fill', '#eee');
 
-	},
+        this.layout();
 
-	renderRepresentative: function (rep) {
+    },
 
-		pg.delgo.trigger("representative:selected", rep);
+    selectRep: function (rep) {
 
-	},
+        pg.delgo.trigger("representative:selected", rep);
 
-	hideRepresentative: function () {
-	},
+    },
 
-	render: function () {
+    deselectRep: function (rep) {
 
-		this.$el.html(this.template());
+    },
 
-		this.renderViz();
+    render: function () {
 
-		return this;
+        this.$el.html(this.template());
 
-	}
+        this.vis = d3.select('.vis');
+
+        this.renderViz();
+
+        return this;
+
+    }
 
 });

@@ -14,6 +14,7 @@
 		<script src="js/src/models/member.js"></script>
 
 		<script src="js/src/views/main.js"></script>
+		<script src="js/src/views/viewer.js"></script>
 		<script src="js/src/views/dashboard.js"></script>
 		<script src="js/src/views/partisan-votes-force.js"></script>
 		<script src="js/src/views/representative.js"></script>
@@ -22,13 +23,17 @@
 
 		<script type="text/html" id="partisan-votes-force-template">
 
-			<!-- <svg class="vis" width="1400" height="4000"></svg> -->
-
 
 		</script>
 
 		<script type="text/html" id="main-template">
 
+			<div class="viewer"></div>
+
+		</script>
+
+		<script type="text/html" id="viewer-template">
+			<svg class="vis"></svg>
 		</script>
 
 		<script type="text/html" id="representative-template">
@@ -80,35 +85,44 @@
 		<script type="text/html" id="dashboard-template">
 
 			<div class="dashboard">
+	
+				<div class="rep"></div>
 
-				<div id="controls">
-					Choose a zoo:
-					<select id="zooChooser">
-						<option value="senate">Senate</option>
-						<option value="house">House</option>
-					</select>
+				<div class="controls">
+					<div class="control">
+						<span class="label">
+							Choose a zoo:
+						</span>
+						<select id="zooChooser">
+							<option value="senate">Senate</option>
+							<option value="house">House</option>
+						</select>
+					</div>
 
-					Choose a congress:
-					<select id="folkChooser">
-						<option value="113">113</option>	
-						<option value="112">112</option>	
-						<option value="111">111</option>	
-						<option value="110">110</option>	
-						<option value="109">109</option>	
-						<option value="108">108</option>	
-						<option value="107">107</option>	
-						<option value="106">106</option>	
-						<option value="105">105</option>	
-						<option value="104">104</option>	
-						<option value="103">103</option>	
-						<option value="102">102</option>	
-					</select>
+					<div class="control">
+						<span class="label">
+							Choose a congress:
+						</span>
+						<select id="folkChooser">
+							<option value="113">113</option>	
+							<option value="112">112</option>	
+							<option value="111">111</option>	
+							<option value="110">110</option>	
+							<option value="109">109</option>	
+							<option value="108">108</option>	
+							<option value="107">107</option>	
+							<option value="106">106</option>	
+							<option value="105">105</option>	
+							<option value="104">104</option>	
+							<option value="103">103</option>	
+							<option value="102">102</option>	
+						</select>
+					</div>
 				</div>
 
 
 			</div>
 
-			<div class="rep"></div>
 
 
 		</script>

@@ -21,11 +21,10 @@ pg.views.Main = Backbone.View.extend({
             this.visView.close();
         }
 
-        this.visView = new pg.views.PartisanVotesForce({
-            model: this.congressModel
+        this.visView = new pg.views.Viewer({
+            model: this.congressModel,
+            el: this.$('.viewer')
         }).render();
-
-        this.$el.append(this.visView.el);
 
     },
 

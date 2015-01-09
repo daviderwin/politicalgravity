@@ -1,7 +1,6 @@
 pg = pg || {};
 pg.views = pg.views || {};
 
-
 pg.views.Dashboard = Backbone.View.extend({
 
 	initialize: function () {
@@ -12,6 +11,11 @@ pg.views.Dashboard = Backbone.View.extend({
 
 		this.listenTo(pg.delgo, "representative:selected", this.renderRepresentativeDetails);
 		this.listenTo(pg.delgo, "representative:deselect", this.clearRepresentativeDetails);
+
+	},
+
+	layout: function () {
+
 
 	},
 
@@ -45,6 +49,7 @@ pg.views.Dashboard = Backbone.View.extend({
 		this.$el.html(this.template());
 
 		this.clearRepresentativeDetails();
+		this.layout();
 
 		return this;
 
