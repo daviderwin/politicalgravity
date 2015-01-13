@@ -52,11 +52,26 @@
 
 .controls {
 	height: 180px;
-	width: 300px;
+	width: 400px;
 	margin: 24px;
 }
 
 .control .label {
 	display: inline-block;
 	width: 150px;
+}
+
+.controls .algorithm {
+	display: inline-block;
+	float: left;
+	width: 80px;
+	height: 40px;
+	margin: 12px;
+
+	cursor: pointer;
+}
+
+.controls .algorithms .selected {
+	font-size: 14px;
+	font-weight: bold;
 }

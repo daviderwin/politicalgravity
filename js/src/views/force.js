@@ -2,13 +2,32 @@ pg = pg || {};
 pg.views = pg.views || {};
 
 
-pg.views.PartisanVotesForce = Backbone.View.extend({
+pg.views.Force = Backbone.View.extend({
 
     initialize: function () {
 
-        _.bindAll(this, 'votesWithPartyByMissed');
+        _.bindAll(this, 'forcer', 'setForceAlgorithm');
 
         this.template = _.template($('#partisan-votes-force-template').html());
+
+        this.loadAlgorithms();
+
+        this.listenTo(pg.delgo, "viewer:setForceAlgorithm", this.setForceAlgorithm);
+
+    },
+
+    loadAlgorithms: function () {
+
+        this.algorithms = [];
+
+        for (var i in pg.maths.force) {
+            var force = pg.maths.force[i];
+
+            this.algorithms[i] = $.proxy(force.algorithm, this);
+            this.forceAlgorithm = this.algorithms[i];
+
+        }
+
 
     },
 
@@ -24,6 +43,16 @@ pg.views.PartisanVotesForce = Backbone.View.extend({
 
     },
 
+    setForceAlgorithm: function(al) {
+
+        if (this.algorithms[al]) {
+            this.forceAlgorithm = this.algorithms[al];
+        }
+
+        this.layout();
+
+    },
+
     layout: _.throttle(function () {
 
         this.width = this.$el.width();
@@ -36,7 +65,7 @@ pg.views.PartisanVotesForce = Backbone.View.extend({
             .links([])
             .gravity(0)
             .size([this.width, this.height])
-            .on("tick", this.votesWithPartyByMissed);
+            .on("tick", this.forcer);
 
         // restart force to reset alpha, which may be used for easing
         this.force.stop();
@@ -44,38 +73,15 @@ pg.views.PartisanVotesForce = Backbone.View.extend({
 
     }, 250),
 
-    votesWithPartyByMissed: function(e) {
 
-        console.log('force');
+    forcer: function (e) {
 
-        // Push nodes toward their designated focus.
-        var that = this,
-            k = 0.5;  // linear velocity
-//            k = 1 * e.alpha; // decreasing velocity (easing)
-    
-        this.model.get('members').models.forEach(function(o, i) {
+        var that = this;
 
-            var foc, ofoc;
+        // cache e for use in forceAlgorithm
+        this.e = e;
 
-            if (! o.get('x')) { o.set('x', 0); }
-            if (! o.get('y')) { o.set('y', 0); }
-
-            o.get('party') == "D" ? foc = 0 : foc = 1;
-            o.get('party') == "D" ? ofoc = 1 : ofoc = 0;
-
-                // pull down for missed votes
-            o.set('y', o.get('y') + (that.foci[foc].y - o.get('y') + (o.get('missed_votes_pct') * 40)) * k);
-
-                // pull toward own party
-            o.set('x', o.get('x') + (that.foci[foc].x - o.get('x')) * k * (o.get('votes_with_party_pct') / 100));
-
-                // pull toward other party
-            o.set('x', o.get('x') + (that.foci[ofoc].x - o.get('x')) * k * (1 - o.get('votes_with_party_pct') / 100) * 1);
-
-            o.x = o.get('x');
-            o.y = o.get('y');
-
-        });
+        this.model.get('members').models.forEach(this.forceAlgorithm);
 
         this.vis.selectAll("circle")
             .attr("cx", function(d) { return d.x; })

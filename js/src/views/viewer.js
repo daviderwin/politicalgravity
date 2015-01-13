@@ -5,55 +5,55 @@ pg.views = pg.views || {};
 pg.views.Viewer = Backbone.View.extend({
 
 
-	initialize: function () {
+    initialize: function () {
 
-		_.bindAll(this, 'layout');
+        _.bindAll(this, 'layout');
 
-		this.template = _.template($('#viewer-template').html());
+        this.template = _.template($('#viewer-template').html());
 
-		$(window).on('resize', this.layout);
-		//setInterval(this.layout, 100);
+        $(window).on('resize', this.layout);
+        //setInterval(this.layout, 100);
 
-	},
+    },
 
-	layout: function () {
+    layout: function () {
 
-		this.$el.find('.vis').css({
-			height: this.$el.height(),
-			width: this.$el.width()
-		});
+        this.$el.find('.vis').css({
+            height: this.$el.height(),
+            width: this.$el.width()
+        });
 
-		this.visView.layout();
+        this.visView.layout();
 
-	},
+    },
 
-	renderVisualzation: function () {
+    renderVisualzation: function () {
 
-		this.visView = new pg.views.PartisanVotesForce({
-		    model: this.model
-		});
+        this.visView = new pg.views.Force({
+            model: this.model
+        });
 
-		this.$el.append(this.visView.el);
+        this.$el.append(this.visView.el);
 
-		this.layout();
+        this.layout();
 
-		this.visView.render();
+        this.visView.render();
 
-	},
+    },
 
-	render: function () {
+    render: function () {
 
-		this.$el.html(this.template(this.model.toJSON()));
+        this.$el.html(this.template(this.model.toJSON()));
 
-		this.renderVisualzation();
+        this.renderVisualzation();
 
-		return this;
+        return this;
 
-	},
+    },
 
-	close: function () {
-		this.unbind();
-		this.remove();
-	}
+    close: function () {
+        this.unbind();
+        this.remove();
+    }
 
 });

@@ -10,13 +10,16 @@
 		<script src="js/lib/d3.js"></script>
 
 		<script src="js/src/config.js"></script>
+
+		<script src="js/src/maths/force.js"></script>
+
 		<script src="js/src/models/congress.js"></script>
 		<script src="js/src/models/member.js"></script>
 
 		<script src="js/src/views/main.js"></script>
 		<script src="js/src/views/viewer.js"></script>
 		<script src="js/src/views/dashboard.js"></script>
-		<script src="js/src/views/partisan-votes-force.js"></script>
+		<script src="js/src/views/force.js"></script>
 		<script src="js/src/views/representative.js"></script>
 
 		<link href="styles/pg.css" type="text/css" rel="stylesheet" />
@@ -118,15 +121,18 @@
 							<option value="102">102</option>	
 						</select>
 					</div>
+					<ul class="algorithms"></ul>
 				</div>
-
 
 			</div>
 
-
-
 		</script>
 
+		<script type="text/html" id="algorithm-template">
+			<li class="algorithm" data-algorithm="<%= id %>">
+				<%= name %>
+			</li>
+		</script>
 
 	</head>
 

@@ -3,61 +3,99 @@ pg.views = pg.views || {};
 
 pg.views.Dashboard = Backbone.View.extend({
 
-	initialize: function () {
+    initialize: function () {
 
-		_.bindAll(this, 'renderRepresentativeDetails', 'clearRepresentativeDetails');
+        _.bindAll(this, 'onClickAlgorithm', 'renderRepresentativeDetails', 'clearRepresentativeDetails');
 
-		this.template = _.template($('#dashboard-template').html());
+        this.template = _.template($('#dashboard-template').html());
+        this.algorithmTemplate = _.template($('#algorithm-template').html());
 
-		this.listenTo(pg.delgo, "representative:selected", this.renderRepresentativeDetails);
-		this.listenTo(pg.delgo, "representative:deselect", this.clearRepresentativeDetails);
+        this.listenTo(pg.delgo, "representative:selected", this.renderRepresentativeDetails);
+        this.listenTo(pg.delgo, "representative:deselect", this.clearRepresentativeDetails);
 
-	},
+    },
 
-	layout: function () {
+    events: {
+        "click .algorithm": "onClickAlgorithm"
+    },
 
+    onClickAlgorithm: function (e) {
 
-	},
+        var el = e.currentTarget;
+        this.setAlgorithm(el);
 
-	renderRepresentativeDetails: function (rep) {
+    },
 
-		if (this.representative) {
-			this.representative.close();
-		}
+    setAlgorithm: function(selectedEl) {
 
-		this.representative = new pg.views.Representative({
-			model: rep
-		}).render();
+        this.$('.algorithm').removeClass('selected');
+        $(selectedEl).addClass('selected');
 
-		this.$el.find('.rep').html(this.representative.el);
+        pg.delgo.trigger("viewer:setForceAlgorithm", $(selectedEl).data('algorithm'));
 
-	},
+    },
 
-	clearRepresentativeDetails: function (rep) {
+    renderRepresentativeDetails: function (rep) {
 
-		if (! this.representative) {
-			return null;
-		}
+        if (this.representative) {
+            this.representative.close();
+        }
 
-		this.representative.close();
-		this.representative = null;
+        this.representative = new pg.views.Representative({
+            model: rep
+        }).render();
 
-	},
+        this.$el.find('.rep').html(this.representative.el);
 
-	render: function () {
+    },
 
-		this.$el.html(this.template());
+    clearRepresentativeDetails: function (rep) {
 
-		this.clearRepresentativeDetails();
-		this.layout();
+        if (! this.representative) {
+            return null;
+        }
 
-		return this;
+        this.representative.close();
+        this.representative = null;
 
-	},
+    },
 
-	close: function () {
-		this.unbind();
-		this.remove();
-	}
+    renderAlgorithms: function () {
+
+        var $algorithmsEl = this.$('.algorithms');
+
+        $algorithmsEl.empty();
+
+        for (var i in pg.maths.force) {
+            var force = pg.maths.force[i];
+
+            $algorithmEl = $(this.algorithmTemplate(force));
+            $.data($algorithmEl, 'algorithm', i);
+            $algorithmsEl.append($algorithmEl);
+
+            if (! this.$('.algorithms .selected').length) {
+                this.setAlgorithm($algorithmEl);
+            }
+
+        }
+
+    },
+
+    render: function () {
+
+        this.$el.html(this.template());
+
+        this.clearRepresentativeDetails();
+
+        this.renderAlgorithms();
+
+        return this;
+
+    },
+
+    close: function () {
+        this.unbind();
+        this.remove();
+    }
 
 });

@@ -26,6 +26,8 @@ pg.views.Main = Backbone.View.extend({
             el: this.$('.viewer')
         }).render();
 
+        this.renderDashboard();
+
     },
 
     renderDashboard: function () {
@@ -38,8 +40,6 @@ pg.views.Main = Backbone.View.extend({
     render: function () {
 
         this.$el.html(this.template());
-
-        this.renderDashboard();
 
         return this;
 
